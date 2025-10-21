@@ -1,0 +1,28 @@
+package org.example.fraktalbackend.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Enrollment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @ManyToOne
+    private User user;
+    @ManyToOne
+    private Course course;
+
+    private LocalDateTime enrollmentDate = LocalDateTime.now();
+}

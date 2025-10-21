@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
-import org.example.fraktalbackend.model.User;
 
 
 @Entity
@@ -19,10 +19,17 @@ public class Course {
     private UUID id;
     private String title;
     private String description;
+    private String category;
     private String thumbnailUrl;
-    private String videoUrl;
-    private LocalDateTime createdAt;
+    private Double price;
+
+
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
-    private User author;
+    private User instructor;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    private List<Lesson> lessons;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
