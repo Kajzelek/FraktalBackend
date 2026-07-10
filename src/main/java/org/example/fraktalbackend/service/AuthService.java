@@ -1,14 +1,16 @@
 package org.example.fraktalbackend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.fraktalbackend.dto.userDTO.AuthResponse;
-import org.example.fraktalbackend.dto.userDTO.LoginRequest;
-import org.example.fraktalbackend.dto.userDTO.RegisterRequest;
+import org.example.fraktalbackend.dto.auth.AuthResponse;
+import org.example.fraktalbackend.dto.auth.LoginRequest;
+import org.example.fraktalbackend.dto.auth.RegisterRequest;
 import org.example.fraktalbackend.model.User;
+import org.example.fraktalbackend.model.Role;
 import org.example.fraktalbackend.repository.UserRepository;
 import org.example.fraktalbackend.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,8 @@ public class AuthService {
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.ROLE_STUDENT)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         userRepository.save(user);

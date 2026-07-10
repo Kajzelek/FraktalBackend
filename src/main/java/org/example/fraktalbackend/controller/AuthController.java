@@ -1,9 +1,9 @@
 package org.example.fraktalbackend.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.fraktalbackend.dto.userDTO.AuthResponse;
-import org.example.fraktalbackend.dto.userDTO.LoginRequest;
-import org.example.fraktalbackend.dto.userDTO.RegisterRequest;
+import org.example.fraktalbackend.dto.auth.AuthResponse;
+import org.example.fraktalbackend.dto.auth.LoginRequest;
+import org.example.fraktalbackend.dto.auth.RegisterRequest;
 import org.example.fraktalbackend.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
