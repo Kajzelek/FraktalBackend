@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(
+        name = "enrollments",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "course_id"})
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,9 +24,13 @@ public class Enrollment {
     private UUID id;
 
     @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
     @ManyToOne
+    @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
+    @Builder.Default
     private LocalDateTime enrollmentDate = LocalDateTime.now();
 }
