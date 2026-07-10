@@ -3,6 +3,7 @@ package org.example.fraktalbackend.controller;
 import lombok.RequiredArgsConstructor;
 
 import org.example.fraktalbackend.dto.user.UserProfileResponse;
+import org.example.fraktalbackend.exception.ResourceNotFoundException;
 import org.example.fraktalbackend.model.User;
 import org.example.fraktalbackend.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> getCurrentUser(Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return ResponseEntity.ok(new UserProfileResponse(
                 user.getId(),

@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.fraktalbackend.dto.auth.AuthResponse;
 import org.example.fraktalbackend.dto.auth.LoginRequest;
 import org.example.fraktalbackend.dto.auth.RegisterRequest;
+import org.example.fraktalbackend.exception.EmailAlreadyTakenException;
+import org.example.fraktalbackend.exception.InvalidCredentialsException;
 import org.example.fraktalbackend.model.User;
 import org.example.fraktalbackend.model.Role;
 import org.example.fraktalbackend.repository.UserRepository;
@@ -22,7 +24,7 @@ public class AuthService {
     public void register(RegisterRequest request){
 
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
-            throw new RuntimeException("Email already taken");
+            throw new EmailAlreadyTakenException("Email already taken");
         }
 
         User user = User.builder()
@@ -38,10 +40,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request){
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
         if(!passwordEncoder.matches(request.getPassword(), user.getPassword())){
-            throw new RuntimeException("Invalid password");
+            throw new InvalidCredentialsException("Invalid email or password ");
         }
 
         String token = jwtUtil.generateToken(user.getEmail());
