@@ -1,6 +1,7 @@
 package org.example.fraktalbackend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.fraktalbackend.dto.progress.ContinueLessonResponse;
 import org.example.fraktalbackend.dto.progress.CourseProgressResponse;
 import org.example.fraktalbackend.dto.progress.LessonProgressResponse;
 import org.example.fraktalbackend.exception.ResourceNotFoundException;
@@ -16,6 +17,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -64,6 +66,56 @@ public class LessonProgressService {
         double progressPercent = totalLessons == 0 ? 0.0 : (completedLessons * 100.0) / totalLessons;
 
         return new CourseProgressResponse(courseId, totalLessons, completedLessons, progressPercent);
+    }
+
+    public ContinueLessonResponse getContinueLesson(UUID courseId, String userEmail) {
+        courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        User user = findUserByEmail(userEmail);
+        List<Lesson> lessons = lessonRepository.findByChapterCourseIdOrderByChapterPositionAscPositionAsc(courseId);
+
+        if (lessons.isEmpty()) {
+            return new ContinueLessonResponse(
+                    courseId,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    false,
+                    false,
+                    true
+            );
+        }
+
+        Lesson lessonToContinue = lessons.stream()
+                .filter(lesson -> !lessonProgressRepository.existsByUserIdAndLessonIdAndCompletedTrue(
+                        user.getId(),
+                        lesson.getId()
+                ))
+                .findFirst()
+                .orElse(lessons.get(lessons.size() - 1));
+
+        boolean courseCompleted = lessons.stream()
+                .allMatch(lesson -> lessonProgressRepository.existsByUserIdAndLessonIdAndCompletedTrue(
+                        user.getId(),
+                        lesson.getId()
+                ));
+        boolean hasAccess = enrollmentService.hasAccess(user.getId(), courseId);
+        boolean locked = !lessonToContinue.isFree() && !hasAccess;
+
+        return new ContinueLessonResponse(
+                courseId,
+                lessonToContinue.getChapter().getId(),
+                lessonToContinue.getChapter().getTitle(),
+                lessonToContinue.getId(),
+                lessonToContinue.getTitle(),
+                lessonToContinue.getPosition(),
+                lessonToContinue.isFree(),
+                locked,
+                courseCompleted
+        );
     }
 
     private void ensureCanTrackProgress(User user, Lesson lesson, UUID courseId) {

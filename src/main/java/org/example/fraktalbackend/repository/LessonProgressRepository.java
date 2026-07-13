@@ -10,4 +10,6 @@ public interface LessonProgressRepository extends JpaRepository<LessonProgress, 
     Optional<LessonProgress> findByUserIdAndLessonId(UUID userId, UUID lessonId);
 
     int countByUserIdAndLessonChapterCourseIdAndCompletedTrue(UUID userId, UUID courseId);
+
+    boolean existsByUserIdAndLessonIdAndCompletedTrue(UUID userId, UUID lessonId);
 }

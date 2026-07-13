@@ -1,6 +1,7 @@
 package org.example.fraktalbackend.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.fraktalbackend.dto.progress.ContinueLessonResponse;
 import org.example.fraktalbackend.dto.progress.CourseProgressResponse;
 import org.example.fraktalbackend.dto.progress.LessonProgressResponse;
 import org.example.fraktalbackend.service.LessonProgressService;
@@ -34,5 +35,13 @@ public class LessonProgressController {
             Authentication authentication
     ) {
         return ResponseEntity.ok(lessonProgressService.getCourseProgress(courseId, authentication.getName()));
+    }
+
+    @GetMapping("/courses/{courseId}/continue")
+    public ResponseEntity<ContinueLessonResponse> getContinueLesson(
+            @PathVariable UUID courseId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(lessonProgressService.getContinueLesson(courseId, authentication.getName()));
     }
 }
