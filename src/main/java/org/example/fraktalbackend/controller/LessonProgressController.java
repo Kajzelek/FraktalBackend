@@ -7,6 +7,7 @@ import org.example.fraktalbackend.dto.progress.LessonProgressResponse;
 import org.example.fraktalbackend.service.LessonProgressService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +28,14 @@ public class LessonProgressController {
             Authentication authentication
     ) {
         return ResponseEntity.ok(lessonProgressService.completeLesson(lessonId, authentication.getName()));
+    }
+
+    @DeleteMapping("/lessons/{lessonId}/complete")
+    public ResponseEntity<LessonProgressResponse> uncompleteLesson(
+            @PathVariable UUID lessonId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(lessonProgressService.uncompleteLesson(lessonId, authentication.getName()));
     }
 
     @GetMapping("/courses/{courseId}/progress")

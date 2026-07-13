@@ -53,6 +53,31 @@ public class LessonProgressService {
         );
     }
 
+    public LessonProgressResponse uncompleteLesson(UUID lessonId, String userEmail) {
+        Lesson lesson = findLessonById(lessonId);
+        User user = findUserByEmail(userEmail);
+        UUID courseId = lesson.getChapter().getCourse().getId();
+
+        ensureCanTrackProgress(user, lesson, courseId);
+
+        LessonProgress progress = lessonProgressRepository.findByUserIdAndLessonId(user.getId(), lessonId)
+                .orElse(null);
+
+        if (progress == null) {
+            return new LessonProgressResponse(lessonId, false, null);
+        }
+
+        progress.setCompleted(false);
+        progress.setCompletedAt(null);
+
+        LessonProgress savedProgress = lessonProgressRepository.save(progress);
+        return new LessonProgressResponse(
+                savedProgress.getLesson().getId(),
+                savedProgress.isCompleted(),
+                savedProgress.getCompletedAt()
+        );
+    }
+
     public CourseProgressResponse getCourseProgress(UUID courseId, String userEmail) {
         courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
