@@ -8,6 +8,7 @@ import org.example.fraktalbackend.exception.ResourceNotFoundException;
 import org.example.fraktalbackend.model.Course;
 import org.example.fraktalbackend.model.Enrollment;
 import org.example.fraktalbackend.model.User;
+import org.example.fraktalbackend.mapper.CourseMapper;
 import org.example.fraktalbackend.repository.CourseRepository;
 import org.example.fraktalbackend.repository.EnrollmentRepository;
 import org.example.fraktalbackend.repository.UserRepository;
@@ -22,6 +23,7 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    private final CourseMapper courseMapper;
 
     public EnrollmentResponse grantAccess(UUID userId, UUID courseId) {
         User user = findUserById(userId);
@@ -46,7 +48,7 @@ public class EnrollmentService {
         return enrollmentRepository.findByUserId(user.getId())
                 .stream()
                 .map(Enrollment::getCourse)
-                .map(this::mapToCourseResponse)
+                .map(courseMapper::toResponse)
                 .toList();
     }
 
@@ -68,21 +70,8 @@ public class EnrollmentService {
         return new EnrollmentResponse(
                 enrollment.getId(),
                 enrollment.getUser().getId(),
-                mapToCourseResponse(enrollment.getCourse()),
+                courseMapper.toResponse(enrollment.getCourse()),
                 enrollment.getEnrollmentDate()
-        );
-    }
-
-    private CourseResponse mapToCourseResponse(Course course) {
-        return new CourseResponse(
-                course.getId(),
-                course.getTitle(),
-                course.getDescription(),
-                course.getCategory(),
-                course.getThumbnailUrl(),
-                course.getPrice(),
-                course.isPublished(),
-                course.getCreatedAt()
         );
     }
 }

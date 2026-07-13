@@ -13,6 +13,7 @@ import org.example.fraktalbackend.model.Course;
 import org.example.fraktalbackend.model.Lesson;
 import org.example.fraktalbackend.model.Role;
 import org.example.fraktalbackend.model.User;
+import org.example.fraktalbackend.mapper.CourseMapper;
 import org.example.fraktalbackend.repository.ChapterRepository;
 import org.example.fraktalbackend.repository.CourseRepository;
 import org.example.fraktalbackend.repository.LessonRepository;
@@ -31,6 +32,7 @@ public class CourseService {
     private final ChapterRepository chapterRepository;
     private final LessonRepository lessonRepository;
     private final EnrollmentService enrollmentService;
+    private final CourseMapper courseMapper;
 
     public CourseResponse createCourse(CreateCourseRequest request, String instructorEmail) {
         User instructor = userRepository.findByEmail(instructorEmail)
@@ -46,27 +48,27 @@ public class CourseService {
                 .instructor(instructor)
                 .build();
 
-        return mapToResponse(courseRepository.save(course));
+        return courseMapper.toResponse(courseRepository.save(course));
     }
 
     public List<CourseResponse> getPublishedCourses() {
         return courseRepository.findByPublishedTrue()
                 .stream()
-                .map(this::mapToResponse)
+                .map(courseMapper::toResponse)
                 .toList();
     }
 
     public List<CourseResponse> getAllCoursesForAdmin() {
         return courseRepository.findAll()
                 .stream()
-                .map(this::mapToResponse)
+                .map(courseMapper::toResponse)
                 .toList();
     }
 
     public CourseResponse getCourseById(UUID courseId, String userEmail) {
         Course course = findCourseById(courseId);
         ensureCourseVisibleToUser(course, userEmail);
-        return mapToResponse(course);
+        return courseMapper.toResponse(course);
     }
 
     public CourseContentResponse getCourseContent(UUID courseId, String userEmail) {
@@ -108,7 +110,7 @@ public class CourseService {
         course.setThumbnailUrl(request.getThumbnailUrl());
         course.setPrice(request.getPrice());
 
-        return mapToResponse(courseRepository.save(course));
+        return courseMapper.toResponse(courseRepository.save(course));
     }
 
     public void deleteCourse(UUID courseId) {
@@ -119,31 +121,18 @@ public class CourseService {
     public CourseResponse publishCourse(UUID courseId) {
         Course course = findCourseById(courseId);
         course.setPublished(true);
-        return mapToResponse(courseRepository.save(course));
+        return courseMapper.toResponse(courseRepository.save(course));
     }
 
     public CourseResponse unpublishCourse(UUID courseId) {
         Course course = findCourseById(courseId);
         course.setPublished(false);
-        return mapToResponse(courseRepository.save(course));
+        return courseMapper.toResponse(courseRepository.save(course));
     }
 
     private Course findCourseById(UUID courseId) {
         return courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
-    }
-
-    private CourseResponse mapToResponse(Course course) {
-        return new CourseResponse(
-                course.getId(),
-                course.getTitle(),
-                course.getDescription(),
-                course.getCategory(),
-                course.getThumbnailUrl(),
-                course.getPrice(),
-                course.isPublished(),
-                course.getCreatedAt()
-        );
     }
 
     private void ensureCourseVisibleToUser(Course course, String userEmail) {
