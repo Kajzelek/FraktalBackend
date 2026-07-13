@@ -24,6 +24,8 @@ public class Course {
     private String category;
     private String thumbnailUrl;
     private Double price;
+    @Builder.Default
+    private boolean published = false;
 
 
     @ManyToOne
@@ -33,5 +35,6 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
     private List<Chapter> chapters;
 
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }

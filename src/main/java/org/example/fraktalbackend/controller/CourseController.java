@@ -2,6 +2,7 @@ package org.example.fraktalbackend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.fraktalbackend.dto.course.CourseContentResponse;
 import org.example.fraktalbackend.dto.course.CourseResponse;
 import org.example.fraktalbackend.dto.course.CreateCourseRequest;
 import org.example.fraktalbackend.dto.course.UpdateCourseRequest;
@@ -12,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,12 +31,28 @@ public class CourseController {
 
     @GetMapping("/courses")
     public ResponseEntity<List<CourseResponse>> getAllCourses() {
-        return ResponseEntity.ok(courseService.getAllCourses());
+        return ResponseEntity.ok(courseService.getPublishedCourses());
+    }
+
+    @GetMapping("/admin/courses")
+    public ResponseEntity<List<CourseResponse>> getAllCoursesForAdmin() {
+        return ResponseEntity.ok(courseService.getAllCoursesForAdmin());
     }
 
     @GetMapping("/courses/{courseId}")
-    public ResponseEntity<CourseResponse> getCourseById(@PathVariable UUID courseId) {
-        return ResponseEntity.ok(courseService.getCourseById(courseId));
+    public ResponseEntity<CourseResponse> getCourseById(
+            @PathVariable UUID courseId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(courseService.getCourseById(courseId, authentication.getName()));
+    }
+
+    @GetMapping("/courses/{courseId}/content")
+    public ResponseEntity<CourseContentResponse> getCourseContent(
+            @PathVariable UUID courseId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(courseService.getCourseContent(courseId, authentication.getName()));
     }
 
     @PostMapping("/admin/courses")
@@ -59,5 +77,15 @@ public class CourseController {
     public ResponseEntity<Void> deleteCourse(@PathVariable UUID courseId) {
         courseService.deleteCourse(courseId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/admin/courses/{courseId}/publish")
+    public ResponseEntity<CourseResponse> publishCourse(@PathVariable UUID courseId) {
+        return ResponseEntity.ok(courseService.publishCourse(courseId));
+    }
+
+    @PatchMapping("/admin/courses/{courseId}/unpublish")
+    public ResponseEntity<CourseResponse> unpublishCourse(@PathVariable UUID courseId) {
+        return ResponseEntity.ok(courseService.unpublishCourse(courseId));
     }
 }

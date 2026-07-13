@@ -81,6 +81,7 @@ public class EnrollmentService {
                 course.getCategory(),
                 course.getThumbnailUrl(),
                 course.getPrice(),
+                course.isPublished(),
                 course.getCreatedAt()
         );
     }
