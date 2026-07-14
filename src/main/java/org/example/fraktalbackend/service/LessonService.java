@@ -10,6 +10,7 @@ import org.example.fraktalbackend.exception.ResourceNotFoundException;
 import org.example.fraktalbackend.model.Chapter;
 import org.example.fraktalbackend.model.Lesson;
 import org.example.fraktalbackend.model.LessonMaterial;
+import org.example.fraktalbackend.model.LessonMaterialType;
 import org.example.fraktalbackend.model.Role;
 import org.example.fraktalbackend.model.User;
 import org.example.fraktalbackend.repository.ChapterRepository;
@@ -90,6 +91,7 @@ public class LessonService {
         }
 
         LessonNavigation navigation = getLessonNavigation(courseId, lesson.getId());
+        List<LessonMaterialResponse> materials = getMaterialsForLesson(lesson.getId());
 
         return new LessonPlayerResponse(
                 lesson.getId(),
@@ -103,7 +105,9 @@ public class LessonService {
                 courseId,
                 navigation.previousLessonId(),
                 navigation.nextLessonId(),
-                getMaterialsForLesson(lesson.getId())
+                findPrimaryMaterial(materials, LessonMaterialType.VIDEO),
+                findPrimaryMaterial(materials, LessonMaterialType.PDF),
+                materials
         );
     }
 
@@ -145,8 +149,20 @@ public class LessonService {
                 material.getTitle(),
                 material.getType(),
                 material.getUrl(),
+                material.getProvider(),
+                material.getProviderAssetId(),
+                material.getDurationSeconds(),
+                material.getThumbnailUrl(),
+                material.getStatus(),
                 material.getPosition()
         );
+    }
+
+    private LessonMaterialResponse findPrimaryMaterial(List<LessonMaterialResponse> materials, LessonMaterialType type) {
+        return materials.stream()
+                .filter(material -> material.getType() == type)
+                .findFirst()
+                .orElse(null);
     }
 
     private LessonNavigation getLessonNavigation(UUID courseId, UUID currentLessonId) {

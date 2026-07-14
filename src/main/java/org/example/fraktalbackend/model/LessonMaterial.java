@@ -32,7 +32,19 @@ public class LessonMaterial {
     @Enumerated(EnumType.STRING)
     private LessonMaterialType type;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private LessonMaterialProvider provider = LessonMaterialProvider.EXTERNAL_URL;
+
+    private String providerAssetId;
     private String url;
+    private Integer durationSeconds;
+    private String thumbnailUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private LessonMaterialStatus status = LessonMaterialStatus.READY;
+
     private Integer position;
 
     @ManyToOne

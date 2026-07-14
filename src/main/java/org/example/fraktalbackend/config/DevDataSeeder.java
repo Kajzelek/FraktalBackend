@@ -6,6 +6,8 @@ import org.example.fraktalbackend.model.Course;
 import org.example.fraktalbackend.model.Enrollment;
 import org.example.fraktalbackend.model.Lesson;
 import org.example.fraktalbackend.model.LessonMaterial;
+import org.example.fraktalbackend.model.LessonMaterialProvider;
+import org.example.fraktalbackend.model.LessonMaterialStatus;
 import org.example.fraktalbackend.model.LessonMaterialType;
 import org.example.fraktalbackend.model.Role;
 import org.example.fraktalbackend.model.User;
@@ -185,17 +187,28 @@ public class DevDataSeeder implements CommandLineRunner {
     private void createMaterials(Lesson lesson) {
         lessonMaterialRepository.save(LessonMaterial.builder()
                 .lesson(lesson)
+                .title("Wideo lekcji")
+                .type(LessonMaterialType.VIDEO)
+                .url(lesson.getVideoUrl())
+                .provider(LessonMaterialProvider.EXTERNAL_URL)
+                .durationSeconds(lesson.getDurationMinutes() == null ? null : lesson.getDurationMinutes() * 60)
+                .thumbnailUrl(lesson.getChapter().getCourse().getThumbnailUrl())
+                .status(LessonMaterialStatus.READY)
+                .position(0)
+                .build());
+        lessonMaterialRepository.save(LessonMaterial.builder()
+                .lesson(lesson)
                 .title("Notatka PDF")
                 .type(LessonMaterialType.PDF)
                 .url(lesson.getPdfUrl())
-                .position(0)
+                .position(1)
                 .build());
         lessonMaterialRepository.save(LessonMaterial.builder()
                 .lesson(lesson)
                 .title("Dodatkowe przykłady")
                 .type(LessonMaterialType.LINK)
                 .url("https://example.com/materialy/" + lesson.getId())
-                .position(1)
+                .position(2)
                 .build());
     }
 

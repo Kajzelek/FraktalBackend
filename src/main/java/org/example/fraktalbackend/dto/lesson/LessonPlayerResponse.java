@@ -21,5 +21,7 @@ public class LessonPlayerResponse {
     private UUID courseId;
     private UUID previousLessonId;
     private UUID nextLessonId;
+    private LessonMaterialResponse primaryVideo;
+    private LessonMaterialResponse primaryPdf;
     private List<LessonMaterialResponse> materials;
 }

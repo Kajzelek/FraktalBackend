@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.fraktalbackend.dto.lessonmaterial.CreateLessonMaterialRequest;
 import org.example.fraktalbackend.dto.lessonmaterial.LessonMaterialResponse;
+import org.example.fraktalbackend.dto.lessonmaterial.SetLessonPdfRequest;
+import org.example.fraktalbackend.dto.lessonmaterial.SetLessonVideoRequest;
 import org.example.fraktalbackend.dto.lessonmaterial.UpdateLessonMaterialRequest;
 import org.example.fraktalbackend.service.LessonMaterialService;
 import org.springframework.http.HttpStatus;
@@ -51,6 +53,22 @@ public class LessonMaterialController {
             @Valid @RequestBody UpdateLessonMaterialRequest request
     ) {
         return ResponseEntity.ok(lessonMaterialService.updateLessonMaterial(materialId, request));
+    }
+
+    @PutMapping("/admin/lessons/{lessonId}/video")
+    public ResponseEntity<LessonMaterialResponse> upsertLessonVideo(
+            @PathVariable UUID lessonId,
+            @Valid @RequestBody SetLessonVideoRequest request
+    ) {
+        return ResponseEntity.ok(lessonMaterialService.upsertLessonVideo(lessonId, request));
+    }
+
+    @PutMapping("/admin/lessons/{lessonId}/pdf")
+    public ResponseEntity<LessonMaterialResponse> upsertLessonPdf(
+            @PathVariable UUID lessonId,
+            @Valid @RequestBody SetLessonPdfRequest request
+    ) {
+        return ResponseEntity.ok(lessonMaterialService.upsertLessonPdf(lessonId, request));
     }
 
     @DeleteMapping("/admin/lesson-materials/{materialId}")

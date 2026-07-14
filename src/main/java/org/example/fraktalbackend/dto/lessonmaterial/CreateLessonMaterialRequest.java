@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
+import org.example.fraktalbackend.model.LessonMaterialProvider;
+import org.example.fraktalbackend.model.LessonMaterialStatus;
 import org.example.fraktalbackend.model.LessonMaterialType;
 
 @Data
@@ -14,8 +16,16 @@ public class CreateLessonMaterialRequest {
     @NotNull(message = "Material type is required")
     private LessonMaterialType type;
 
-    @NotBlank(message = "Url is required")
     private String url;
+
+    private LessonMaterialProvider provider;
+    private String providerAssetId;
+
+    @PositiveOrZero(message = "Duration seconds cannot be negative")
+    private Integer durationSeconds;
+
+    private String thumbnailUrl;
+    private LessonMaterialStatus status;
 
     @NotNull(message = "Position is required")
     @PositiveOrZero(message = "Position cannot be negative")
