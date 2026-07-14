@@ -3,6 +3,7 @@ package org.example.fraktalbackend.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.fraktalbackend.dto.course.CourseAccessResponse;
+import org.example.fraktalbackend.dto.course.CourseCatalogResponse;
 import org.example.fraktalbackend.dto.course.CourseContentResponse;
 import org.example.fraktalbackend.dto.course.CourseResponse;
 import org.example.fraktalbackend.dto.course.CreateCourseRequest;
@@ -33,6 +34,11 @@ public class CourseController {
     @GetMapping("/courses")
     public ResponseEntity<List<CourseResponse>> getAllCourses() {
         return ResponseEntity.ok(courseService.getPublishedCourses());
+    }
+
+    @GetMapping("/courses/catalog")
+    public ResponseEntity<List<CourseCatalogResponse>> getCourseCatalog(Authentication authentication) {
+        return ResponseEntity.ok(courseService.getCourseCatalog(authentication.getName()));
     }
 
     @GetMapping("/admin/courses")

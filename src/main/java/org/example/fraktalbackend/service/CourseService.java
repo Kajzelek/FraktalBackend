@@ -3,6 +3,7 @@ package org.example.fraktalbackend.service;
 import lombok.RequiredArgsConstructor;
 import org.example.fraktalbackend.dto.course.ChapterContentResponse;
 import org.example.fraktalbackend.dto.course.CourseAccessResponse;
+import org.example.fraktalbackend.dto.course.CourseCatalogResponse;
 import org.example.fraktalbackend.dto.course.CourseContentResponse;
 import org.example.fraktalbackend.dto.course.CourseResponse;
 import org.example.fraktalbackend.dto.course.CreateCourseRequest;
@@ -17,6 +18,7 @@ import org.example.fraktalbackend.model.User;
 import org.example.fraktalbackend.mapper.CourseMapper;
 import org.example.fraktalbackend.repository.ChapterRepository;
 import org.example.fraktalbackend.repository.CourseRepository;
+import org.example.fraktalbackend.repository.LessonProgressRepository;
 import org.example.fraktalbackend.repository.LessonRepository;
 import org.example.fraktalbackend.repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
@@ -32,6 +34,7 @@ public class CourseService {
     private final UserRepository userRepository;
     private final ChapterRepository chapterRepository;
     private final LessonRepository lessonRepository;
+    private final LessonProgressRepository lessonProgressRepository;
     private final EnrollmentService enrollmentService;
     private final CourseMapper courseMapper;
 
@@ -56,6 +59,16 @@ public class CourseService {
         return courseRepository.findByPublishedTrue()
                 .stream()
                 .map(courseMapper::toResponse)
+                .toList();
+    }
+
+    public List<CourseCatalogResponse> getCourseCatalog(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return courseRepository.findByPublishedTrue()
+                .stream()
+                .map(course -> mapToCatalogResponse(course, user))
                 .toList();
     }
 
@@ -86,7 +99,7 @@ public class CourseService {
 
         List<ChapterContentResponse> chapters = chapterRepository.findByCourseIdOrderByPositionAsc(courseId)
                 .stream()
-                .map(chapter -> mapToChapterContentResponse(chapter, hasAccess))
+                .map(chapter -> mapToChapterContentResponse(chapter, hasAccess, user.getId()))
                 .toList();
 
         return new CourseContentResponse(
@@ -167,10 +180,10 @@ public class CourseService {
         }
     }
 
-    private ChapterContentResponse mapToChapterContentResponse(Chapter chapter, boolean hasAccess) {
+    private ChapterContentResponse mapToChapterContentResponse(Chapter chapter, boolean hasAccess, UUID userId) {
         List<LessonContentResponse> lessons = lessonRepository.findByChapterIdOrderByPositionAsc(chapter.getId())
                 .stream()
-                .map(lesson -> mapToLessonContentResponse(lesson, hasAccess))
+                .map(lesson -> mapToLessonContentResponse(lesson, hasAccess, userId))
                 .toList();
 
         return new ChapterContentResponse(
@@ -181,8 +194,9 @@ public class CourseService {
         );
     }
 
-    private LessonContentResponse mapToLessonContentResponse(Lesson lesson, boolean hasAccess) {
+    private LessonContentResponse mapToLessonContentResponse(Lesson lesson, boolean hasAccess, UUID userId) {
         boolean locked = !lesson.isFree() && !hasAccess;
+        boolean completed = lessonProgressRepository.existsByUserIdAndLessonIdAndCompletedTrue(userId, lesson.getId());
 
         return new LessonContentResponse(
                 lesson.getId(),
@@ -191,7 +205,38 @@ public class CourseService {
                 lesson.getPosition(),
                 lesson.isFree(),
                 locked,
+                completed,
                 lesson.getDurationMinutes()
+        );
+    }
+
+    private CourseCatalogResponse mapToCatalogResponse(Course course, User user) {
+        UUID courseId = course.getId();
+        boolean admin = user.getRole() == Role.ROLE_ADMIN;
+        boolean hasEnrollment = enrollmentService.hasAccess(user.getId(), courseId);
+        boolean hasAccess = admin || hasEnrollment;
+        int lessonsCount = lessonRepository.countByChapterCourseId(courseId);
+        int completedLessons = lessonProgressRepository.countByUserIdAndLessonChapterCourseIdAndCompletedTrue(
+                user.getId(),
+                courseId
+        );
+        double progressPercent = lessonsCount == 0 ? 0.0 : (completedLessons * 100.0) / lessonsCount;
+        boolean freePreviewAvailable = lessonRepository.existsByChapterCourseIdAndIsFreeTrue(courseId);
+        boolean canStart = hasAccess || freePreviewAvailable;
+
+        return new CourseCatalogResponse(
+                course.getId(),
+                course.getTitle(),
+                course.getDescription(),
+                course.getCategory(),
+                course.getThumbnailUrl(),
+                course.getPrice(),
+                hasAccess,
+                lessonsCount,
+                completedLessons,
+                progressPercent,
+                freePreviewAvailable,
+                canStart
         );
     }
 }

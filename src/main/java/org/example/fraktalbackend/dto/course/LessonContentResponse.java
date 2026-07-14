@@ -14,5 +14,6 @@ public class LessonContentResponse {
     private Integer position;
     private boolean free;
     private boolean locked;
+    private boolean completed;
     private Integer durationMinutes;
 }
