@@ -5,12 +5,15 @@ import org.example.fraktalbackend.dto.lesson.CreateLessonRequest;
 import org.example.fraktalbackend.dto.lesson.LessonPlayerResponse;
 import org.example.fraktalbackend.dto.lesson.LessonResponse;
 import org.example.fraktalbackend.dto.lesson.UpdateLessonRequest;
+import org.example.fraktalbackend.dto.lessonmaterial.LessonMaterialResponse;
 import org.example.fraktalbackend.exception.ResourceNotFoundException;
 import org.example.fraktalbackend.model.Chapter;
 import org.example.fraktalbackend.model.Lesson;
+import org.example.fraktalbackend.model.LessonMaterial;
 import org.example.fraktalbackend.model.Role;
 import org.example.fraktalbackend.model.User;
 import org.example.fraktalbackend.repository.ChapterRepository;
+import org.example.fraktalbackend.repository.LessonMaterialRepository;
 import org.example.fraktalbackend.repository.LessonRepository;
 import org.example.fraktalbackend.repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
@@ -24,6 +27,7 @@ import java.util.UUID;
 public class LessonService {
     private final LessonRepository lessonRepository;
     private final ChapterRepository chapterRepository;
+    private final LessonMaterialRepository lessonMaterialRepository;
     private final UserRepository userRepository;
     private final EnrollmentService enrollmentService;
 
@@ -85,6 +89,8 @@ public class LessonService {
             throw new AccessDeniedException("You do not have access to this lesson");
         }
 
+        LessonNavigation navigation = getLessonNavigation(courseId, lesson.getId());
+
         return new LessonPlayerResponse(
                 lesson.getId(),
                 lesson.getTitle(),
@@ -94,7 +100,10 @@ public class LessonService {
                 lesson.getDurationMinutes(),
                 lesson.isFree(),
                 lesson.getChapter().getId(),
-                courseId
+                courseId,
+                navigation.previousLessonId(),
+                navigation.nextLessonId(),
+                getMaterialsForLesson(lesson.getId())
         );
     }
 
@@ -120,5 +129,41 @@ public class LessonService {
                 lesson.getDurationMinutes(),
                 lesson.getChapter().getId()
         );
+    }
+
+    private List<LessonMaterialResponse> getMaterialsForLesson(UUID lessonId) {
+        return lessonMaterialRepository.findByLessonIdOrderByPositionAsc(lessonId)
+                .stream()
+                .map(this::mapMaterialToResponse)
+                .toList();
+    }
+
+    private LessonMaterialResponse mapMaterialToResponse(LessonMaterial material) {
+        return new LessonMaterialResponse(
+                material.getId(),
+                material.getLesson().getId(),
+                material.getTitle(),
+                material.getType(),
+                material.getUrl(),
+                material.getPosition()
+        );
+    }
+
+    private LessonNavigation getLessonNavigation(UUID courseId, UUID currentLessonId) {
+        List<Lesson> courseLessons = lessonRepository.findByChapterCourseIdOrderByChapterPositionAscPositionAsc(courseId);
+
+        for (int i = 0; i < courseLessons.size(); i++) {
+            if (courseLessons.get(i).getId().equals(currentLessonId)) {
+                UUID previousLessonId = i > 0 ? courseLessons.get(i - 1).getId() : null;
+                UUID nextLessonId = i < courseLessons.size() - 1 ? courseLessons.get(i + 1).getId() : null;
+
+                return new LessonNavigation(previousLessonId, nextLessonId);
+            }
+        }
+
+        return new LessonNavigation(null, null);
+    }
+
+    private record LessonNavigation(UUID previousLessonId, UUID nextLessonId) {
     }
 }

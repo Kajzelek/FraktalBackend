@@ -2,7 +2,9 @@ package org.example.fraktalbackend.dto.lesson;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.example.fraktalbackend.dto.lessonmaterial.LessonMaterialResponse;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -17,4 +19,7 @@ public class LessonPlayerResponse {
     private boolean free;
     private UUID chapterId;
     private UUID courseId;
+    private UUID previousLessonId;
+    private UUID nextLessonId;
+    private List<LessonMaterialResponse> materials;
 }
