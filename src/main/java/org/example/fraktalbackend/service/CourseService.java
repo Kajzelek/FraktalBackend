@@ -2,6 +2,7 @@ package org.example.fraktalbackend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.fraktalbackend.dto.course.ChapterContentResponse;
+import org.example.fraktalbackend.dto.course.CourseAccessResponse;
 import org.example.fraktalbackend.dto.course.CourseContentResponse;
 import org.example.fraktalbackend.dto.course.CourseResponse;
 import org.example.fraktalbackend.dto.course.CreateCourseRequest;
@@ -98,6 +99,28 @@ public class CourseService {
                 course.isPublished(),
                 hasAccess,
                 chapters
+        );
+    }
+
+    public CourseAccessResponse getCourseAccess(UUID courseId, String userEmail) {
+        Course course = findCourseById(courseId);
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        boolean admin = user.getRole() == Role.ROLE_ADMIN;
+        boolean hasEnrollment = enrollmentService.hasAccess(user.getId(), courseId);
+        boolean freePreviewAvailable = lessonRepository.existsByChapterCourseIdAndIsFreeTrue(courseId);
+        boolean canViewContent = course.isPublished() || admin;
+        boolean canStart = canViewContent && (admin || hasEnrollment || freePreviewAvailable);
+
+        return new CourseAccessResponse(
+                course.getId(),
+                course.isPublished(),
+                hasEnrollment,
+                admin,
+                canViewContent,
+                canStart,
+                freePreviewAvailable
         );
     }
 

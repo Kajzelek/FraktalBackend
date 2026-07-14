@@ -1,10 +1,12 @@
 package org.example.fraktalbackend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.fraktalbackend.dto.progress.CourseStartResponse;
 import org.example.fraktalbackend.dto.progress.ContinueLessonResponse;
 import org.example.fraktalbackend.dto.progress.CourseProgressResponse;
 import org.example.fraktalbackend.dto.progress.LessonProgressResponse;
 import org.example.fraktalbackend.exception.ResourceNotFoundException;
+import org.example.fraktalbackend.model.Course;
 import org.example.fraktalbackend.model.Lesson;
 import org.example.fraktalbackend.model.LessonProgress;
 import org.example.fraktalbackend.model.Role;
@@ -140,6 +142,50 @@ public class LessonProgressService {
                 lessonToContinue.isFree(),
                 locked,
                 courseCompleted
+        );
+    }
+
+    public CourseStartResponse getCourseStart(UUID courseId, String userEmail) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+        User user = findUserByEmail(userEmail);
+
+        boolean admin = user.getRole() == Role.ROLE_ADMIN;
+        if (!course.isPublished() && !admin) {
+            throw new AccessDeniedException("Course is not published");
+        }
+
+        List<Lesson> lessons = lessonRepository.findByChapterCourseIdOrderByChapterPositionAscPositionAsc(courseId);
+        if (lessons.isEmpty()) {
+            throw new ResourceNotFoundException("Course has no lessons");
+        }
+
+        Lesson lessonToOpen = lessons.stream()
+                .filter(lesson -> !lessonProgressRepository.existsByUserIdAndLessonIdAndCompletedTrue(
+                        user.getId(),
+                        lesson.getId()
+                ))
+                .findFirst()
+                .orElse(lessons.get(lessons.size() - 1));
+
+        boolean hasAccess = admin || enrollmentService.hasAccess(user.getId(), courseId);
+        if (!lessonToOpen.isFree() && !hasAccess) {
+            throw new AccessDeniedException("You do not have access to this lesson");
+        }
+
+        boolean hasStartedCourse = lessonProgressRepository.existsByUserIdAndLessonChapterCourseIdAndCompletedTrue(
+                user.getId(),
+                courseId
+        );
+        String mode = hasStartedCourse ? "CONTINUE" : "START";
+
+        return new CourseStartResponse(
+                courseId,
+                lessonToOpen.getChapter().getId(),
+                lessonToOpen.getChapter().getTitle(),
+                lessonToOpen.getId(),
+                lessonToOpen.getTitle(),
+                mode
         );
     }
 

@@ -12,4 +12,6 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     int countByChapterCourseId(UUID courseId);
 
     List<Lesson> findByChapterCourseIdOrderByChapterPositionAscPositionAsc(UUID courseId);
+
+    boolean existsByChapterCourseIdAndIsFreeTrue(UUID courseId);
 }
