@@ -11,10 +11,12 @@ import org.example.fraktalbackend.model.Chapter;
 import org.example.fraktalbackend.model.Lesson;
 import org.example.fraktalbackend.model.LessonMaterial;
 import org.example.fraktalbackend.model.LessonMaterialType;
+import org.example.fraktalbackend.model.LessonProgress;
 import org.example.fraktalbackend.model.Role;
 import org.example.fraktalbackend.model.User;
 import org.example.fraktalbackend.repository.ChapterRepository;
 import org.example.fraktalbackend.repository.LessonMaterialRepository;
+import org.example.fraktalbackend.repository.LessonProgressRepository;
 import org.example.fraktalbackend.repository.LessonRepository;
 import org.example.fraktalbackend.repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
@@ -29,6 +31,7 @@ public class LessonService {
     private final LessonRepository lessonRepository;
     private final ChapterRepository chapterRepository;
     private final LessonMaterialRepository lessonMaterialRepository;
+    private final LessonProgressRepository lessonProgressRepository;
     private final UserRepository userRepository;
     private final EnrollmentService enrollmentService;
 
@@ -92,6 +95,9 @@ public class LessonService {
 
         LessonNavigation navigation = getLessonNavigation(courseId, lesson.getId());
         List<LessonMaterialResponse> materials = getMaterialsForLesson(lesson.getId());
+        LessonProgress progress = lessonProgressRepository.findByUserIdAndLessonId(user.getId(), lesson.getId())
+                .orElse(null);
+        boolean completed = progress != null && progress.isCompleted();
 
         return new LessonPlayerResponse(
                 lesson.getId(),
@@ -105,6 +111,8 @@ public class LessonService {
                 courseId,
                 navigation.previousLessonId(),
                 navigation.nextLessonId(),
+                completed,
+                completed ? progress.getCompletedAt() : null,
                 findPrimaryMaterial(materials, LessonMaterialType.VIDEO),
                 findPrimaryMaterial(materials, LessonMaterialType.PDF),
                 materials

@@ -25,6 +25,9 @@ public class DashboardService {
 
         UserProfileResponse userProfile = new UserProfileResponse(
                 user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getNickname(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getRole(),

@@ -293,6 +293,8 @@ Response:
   "courseId": "...",
   "previousLessonId": "...",
   "nextLessonId": "...",
+  "completed": false,
+  "completedAt": null,
   "primaryVideo": {
     "id": "...",
     "lessonId": "...",

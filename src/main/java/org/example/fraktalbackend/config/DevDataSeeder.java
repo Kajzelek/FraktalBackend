@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 public class DevDataSeeder implements CommandLineRunner {
     private static final String ADMIN_EMAIL = "admin@fraktal.pl";
     private static final String STUDENT_EMAIL = "student@fraktal.pl";
+    private static final String STUDENT_EMAIL2 = "student@fraktal2.pl";
     private static final String COURSE_TITLE = "Matura podstawowa - kurs testowy";
 
     private final UserRepository userRepository;
@@ -56,6 +57,15 @@ public class DevDataSeeder implements CommandLineRunner {
                 "Student",
                 "Testowy",
                 "student",
+                Role.ROLE_STUDENT
+        );
+
+        User student2 = createUserIfMissing(
+                STUDENT_EMAIL2,
+                "Student123!",
+                "Student2",
+                "Testowy2",
+                "student2",
                 Role.ROLE_STUDENT
         );
 

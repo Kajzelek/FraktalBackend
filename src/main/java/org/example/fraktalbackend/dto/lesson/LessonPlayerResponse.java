@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.example.fraktalbackend.dto.lessonmaterial.LessonMaterialResponse;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +22,8 @@ public class LessonPlayerResponse {
     private UUID courseId;
     private UUID previousLessonId;
     private UUID nextLessonId;
+    private boolean completed;
+    private LocalDateTime completedAt;
     private LessonMaterialResponse primaryVideo;
     private LessonMaterialResponse primaryPdf;
     private List<LessonMaterialResponse> materials;
