@@ -36,4 +36,9 @@ public class EnrollmentController {
                 .status(HttpStatus.CREATED)
                 .body(enrollmentService.grantAccess(userId, courseId));
     }
+
+    @GetMapping("/admin/users/{userId}/enrollments")
+    public ResponseEntity<List<EnrollmentResponse>> getUserEnrollments(@PathVariable UUID userId) {
+        return ResponseEntity.ok(enrollmentService.getUserEnrollments(userId));
+    }
 }

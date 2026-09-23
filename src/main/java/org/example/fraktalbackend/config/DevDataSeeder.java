@@ -31,6 +31,7 @@ public class DevDataSeeder implements CommandLineRunner {
     private static final String ADMIN_EMAIL = "admin@fraktal.pl";
     private static final String STUDENT_EMAIL = "student@fraktal.pl";
     private static final String STUDENT_EMAIL2 = "student@fraktal2.pl";
+    private static final String STUDENT_EMAIL3 = "student@fraktal3.pl";
     private static final String COURSE_TITLE = "Matura podstawowa - kurs testowy";
 
     private final UserRepository userRepository;
@@ -66,6 +67,15 @@ public class DevDataSeeder implements CommandLineRunner {
                 "Student2",
                 "Testowy2",
                 "student2",
+                Role.ROLE_STUDENT
+        );
+
+        User student3 = createUserIfMissing(
+                STUDENT_EMAIL3,
+                "Student123!",
+                "Student3",
+                "Testowy3",
+                "student3",
                 Role.ROLE_STUDENT
         );
 

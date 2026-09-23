@@ -1,5 +1,6 @@
 package org.example.fraktalbackend.security;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,7 +37,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         jwt = authHeader.substring(7);
-        userEmail = jwtUtil.extractEmail(jwt);
+        try {
+            userEmail = jwtUtil.extractEmail(jwt);
+        } catch (JwtException | IllegalArgumentException exception) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write(
+                    "{\"message\":\"Sesja wygasla lub token jest nieprawidlowy.\"}"
+            );
+            return;
+        }
 
         if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);

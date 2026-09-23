@@ -52,6 +52,15 @@ public class EnrollmentService {
                 .toList();
     }
 
+    public List<EnrollmentResponse> getUserEnrollments(UUID userId) {
+        findUserById(userId);
+
+        return enrollmentRepository.findByUserId(userId)
+                .stream()
+                .map(this::mapToEnrollmentResponse)
+                .toList();
+    }
+
     public boolean hasAccess(UUID userId, UUID courseId) {
         return enrollmentRepository.existsByUserIdAndCourseId(userId, courseId);
     }
