@@ -48,13 +48,18 @@ class AuthServiceTest {
 
         when(userRepository.findByEmail("student@test.pl")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
+        when(jwtUtil.generateToken("student@test.pl"))
+                .thenReturn("jwt-token");
 
-        authService.register(request);
+        var response = authService.register(request);
+
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
+        verify(jwtUtil).generateToken("student@test.pl");
 
         User savedUser = userCaptor.getValue();
+        assertThat(response.getToken()).isEqualTo("jwt-token");
         assertThat(savedUser.getUsername()).isEqualTo("student");
         assertThat(savedUser.getEmail()).isEqualTo("student@test.pl");
         assertThat(savedUser.getPassword()).isEqualTo("encoded-password");

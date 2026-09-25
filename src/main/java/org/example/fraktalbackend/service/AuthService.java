@@ -21,7 +21,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public void register(RegisterRequest request){
+    public AuthResponse register(RegisterRequest request){
 
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
             throw new EmailAlreadyTakenException("Email already taken");
@@ -36,6 +36,9 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+
+        String token = jwtUtil.generateToken(user.getEmail());
+        return new AuthResponse(token);
     }
 
     public AuthResponse login(LoginRequest request){
